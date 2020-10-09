@@ -1,5 +1,5 @@
 # Data Engineering - Using AWS EMR and RedShift 
-- Batch Processing
+- Batch Processing within an AWS pipeline
 
 
 
