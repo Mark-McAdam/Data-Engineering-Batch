@@ -43,4 +43,6 @@ pg_unload = PostgresOperator(
     wait_for_downstream=True,
 )
 
+
+# this controls flow of data through the pipeline via dags in airflow
 pg_unload >> end_of_data_pipeline
