@@ -28,4 +28,6 @@ __pycache__
 # datasets
 *raw_input_data*
 
+
+# Mac Files not needed for production
 .DS_STORE
