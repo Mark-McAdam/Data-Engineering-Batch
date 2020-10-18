@@ -24,6 +24,8 @@ sftp-config.json
 
 # Python
 __pycache__
+.pycache
+
 
 # datasets
 *raw_input_data*
@@ -31,3 +33,5 @@ __pycache__
 
 # Mac Files not needed for production
 .DS_STORE
+
+
