@@ -1,0 +1,44 @@
+[
+    {
+        "Classification": "spark-env",
+        "Configurations": [
+            {
+                "Classification": "Export",
+                "Properties": {
+                    "PYSPARK_PYTHON": "/usr/bin/python3"
+                }
+            }
+        ]
+    }
+]
+
+[
+    {
+        "configurations": [
+            {
+                "classification": "export",
+                "properties": {
+                    "PYSPARK_PYTHON": "usr/bin/python3"
+                }
+            }
+        ],
+        "classification": "spark-env",
+        "properties": {}
+    }
+]
+
+
+FROM THE AWS DOCS _ USE THIS 
+[
+    {
+        "Classification": "spark-env",
+        "Configurations": [
+            {
+                "Classification": "export",
+                "Properties": {
+                    "PYSPARK_PYTHON": "/usr/bin/python3"
+                }
+            }
+        ]
+    }
+]
