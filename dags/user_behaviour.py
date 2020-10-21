@@ -97,7 +97,7 @@ end_of_data_pipeline = DummyOperator(task_id="end_of_data_pipeline", dag=dag)
 
 # Step 1
 # data pipeline
-pg_unload >> user_purchase_to_s3_stage >> remove_local_user_purchase_file >> end_of_data_pipeline
+# pg_unload >> user_purchase_to_s3_stage >> remove_local_user_purchase_file >> end_of_data_pipeline
 
 
 # Step 2 Code
@@ -160,10 +160,61 @@ clean_movie_review_data = EmrStepSensor(
 )
 
 # file -> s3 -> EMR -> s3
+# [
+#     movie_review_to_s3_stage,
+#     move_emr_script_to_s3,
+# ] >> add_emr_steps >> clean_movie_review_data
+
+# part 3
+
+# existing config
+get_user_behaviour = "scripts/sql/get_user_behavior_metrics.sql"
+
+# existing imports
+from airflow.hooks.postgres_hook import PostgresHook
+import psycopg2
+
+# existing helper function(s)
+def run_redshift_external_query(qry):
+    rs_hook = PostgresHook(postgres_conn_id="redshift")
+    rs_conn = rs_hook.get_conn()
+    rs_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    rs_cursor = rs_conn.cursor()
+    rs_cursor.execute(qry)
+    rs_cursor.close()
+    rs_conn.commit()
+
+
+# existing tasks
+user_purchase_to_rs_stage = PythonOperator(
+    dag=dag,
+    task_id="user_purchase_to_rs_stage",
+    python_callable=run_redshift_external_query,
+    op_kwargs={
+        "qry": "alter table spectrum.user_purchase_staging add partition(insert_date='{{ ds }}') \
+            location 's3://data-engineering-batch-mmc/user_purchase/stage/{{ ds }}'",
+    },
+)
+
+get_user_behaviour = PostgresOperator(
+    dag=dag,
+    task_id="get_user_behaviour",
+    sql=get_user_behaviour,
+    postgres_conn_id="redshift",
+)
+
+# existing task dependency def
+# remove_local_user_purchase_file >> user_purchase_to_rs_stage
+
+
+# Part 1 2 and 3 together finally.
+pg_unload >> user_purchase_to_s3_stage >> remove_local_user_purchase_file >> user_purchase_to_rs_stage
 [
     movie_review_to_s3_stage,
     move_emr_script_to_s3,
 ] >> add_emr_steps >> clean_movie_review_data
-
-# part 3
+[
+    user_purchase_to_rs_stage,
+    clean_movie_review_data,
+] >> get_user_behaviour >> end_of_data_pipeline
 

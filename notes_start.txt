@@ -1,0 +1,78 @@
+docker-compose -f docker-compose-LocalExecutor.yml down
+docker-compose -f docker-compose-LocalExecutor.yml up -d
+
+pgcli -h localhost -p 5432 -U airflow -d airflow
+pass also airflow 
+
+setup/postgres/create_user_purchase.sql - to reload the data in postgres below 
+
+CREATE SCHEMA retail;
+
+CREATE TABLE retail.user_purchase (
+    invoice_number varchar(10),
+    stock_code varchar(20),
+    detail varchar(1000),
+    quantity int,
+    invoice_date timestamp,
+    unit_price Numeric(8,3),
+    customer_id int,
+    country varchar(20)
+);
+
+COPY retail.user_purchase(invoice_number,
+stock_code,detail,quantity,
+invoice_date,unit_price,customer_id,country) 
+FROM '/data/retail/OnlineRetail.csv' 
+DELIMITER ','  CSV HEADER;
+
+
+# EMR config 
+
+
+# Redshift 
+
+pgcli -h <your-redshift-cluster> -d <your-database> -U <your-user> -p 5439 -W
+
+
+create external schema spectrum 
+from data catalog 
+database 'spectrumdb' 
+iam_role 'arn:aws:iam::189161399667:role/mySpectrumRole'
+create external database if not exists;
+
+-- user purchase staging table with an insert_date partition
+drop table if exists spectrum.user_purchase_staging;
+create external table spectrum.user_purchase_staging (
+    InvoiceNo varchar(10),
+    StockCode varchar(20),
+    detail varchar(1000),
+    Quantity integer,
+    InvoiceDate timestamp,
+    UnitPrice decimal(8,3),
+    customerid integer,
+    Country varchar(20)
+)
+partitioned by (insert_date date)
+row format delimited fields terminated by ','
+stored as textfile
+location 's3://data-engineering-batch-mmc/user_purchase/stage/'
+table properties ('skip.header.line.count'='1');
+
+-- movie review staging table
+drop table if exists spectrum.movie_review_clean_stage;
+CREATE EXTERNAL TABLE spectrum.movie_review_clean_stage (
+   cid varchar(100),
+   positive_review boolean
+)
+STORED AS PARQUET
+LOCATION 's3://data-engineering-batch-mmc/movie_review/stage/';
+
+-- user behaviour metric tabls
+DROP TABLE IF EXISTS public.user_behavior_metric;
+CREATE TABLE public.user_behavior_metric (
+    customerid integer,
+    amount_spent decimal(18, 5),
+    review_score integer,
+    review_count integer,
+    insert_date date
+);
