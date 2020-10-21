@@ -105,7 +105,7 @@ movie_clean_emr_steps = "./dags/scripts/emr/clean_movie_review.json"
 movie_text_classification_script = "./dags/scripts/spark/random_text_classification.py"
 
 # TODO !!!
-EMR_ID = "j-28NZ37V424VR5"
+EMR_ID = "j-13PIG4OT3RKEK"
 movie_review_load_folder = "movie_review/load/"
 movie_review_stage = "movie_review/stage/"
 text_classifier_script = "scripts/random_text_classifier.py"
