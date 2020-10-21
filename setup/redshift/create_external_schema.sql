@@ -1,3 +1,5 @@
+-- careful with the drop schema and cascade restrict for testing my restart only. 
+DROP SCHEMA IF EXISTS spectrum DROP EXTERNAL DATABASE CASCADE;
 create external schema spectrum 
 from data catalog 
 database 'spectrumdb' 

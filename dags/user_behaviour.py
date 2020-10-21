@@ -6,10 +6,13 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.postgres_operator import PostgresOperator
 from airflow.hooks.S3_hook import S3Hook
 from airflow.operators import PythonOperator
-import os
-import json
 from airflow.contrib.operators.emr_add_steps_operator import EmrAddStepsOperator
 from airflow.contrib.sensors.emr_step_sensor import EmrStepSensor
+from airflow.hooks.postgres_hook import PostgresHook
+
+import psycopg2
+import os
+import json
 
 
 # config
@@ -18,6 +21,10 @@ unload_user_purchase = "./scripts/sql/filter_unload_user_purchase.sql"
 temp_filtered_user_purchase = "/temp/temp_filtered_user_purchase.csv"
 movie_review_local = "/data/movie_review/movie_review.csv"  # location of movie review within the docker container
 # look at the docker-compose volume mounting for clarification
+movie_clean_emr_steps = "./dags/scripts/emr/clean_movie_review.json"
+movie_text_classification_script = "./dags/scripts/spark/random_text_classification.py"
+
+get_user_behaviour = "scripts/sql/get_user_behavior_metrics.sql"
 
 
 # remote config
@@ -66,6 +73,16 @@ def remove_local_file(filelocation):
         logging.info(f"File {filelocation} not found")
 
 
+def run_redshift_external_query(qry):
+    rs_hook = PostgresHook(postgres_conn_id="redshift")
+    rs_conn = rs_hook.get_conn()
+    rs_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    rs_cursor = rs_conn.cursor()
+    rs_cursor.execute(qry)
+    rs_cursor.close()
+    rs_conn.commit()
+
+
 pg_unload = PostgresOperator(
     dag=dag,
     task_id="pg_unload",
@@ -97,20 +114,12 @@ remove_local_user_purchase_file = PythonOperator(
 end_of_data_pipeline = DummyOperator(task_id="end_of_data_pipeline", dag=dag)
 
 
-# Step 1
-# data pipeline
-# pg_unload >> user_purchase_to_s3_stage >> remove_local_user_purchase_file >> end_of_data_pipeline
-
-
 # Step 2 Code
-movie_clean_emr_steps = "./dags/scripts/emr/clean_movie_review.json"
-movie_text_classification_script = "./dags/scripts/spark/random_text_classification.py"
 
-# TODO !!!
-EMR_ID = "j-13PIG4OT3RKEK"
+EMR_ID = "j-30YXNXRWQ6C6D"
 movie_review_load_folder = "movie_review/load/"
 movie_review_stage = "movie_review/stage/"
-text_classifier_script = "scripts/random_text_classifier.py"
+text_classifier_script = "scripts/random_text_classification.py"
 
 movie_review_to_s3_stage = PythonOperator(
     dag=dag,
@@ -161,33 +170,6 @@ clean_movie_review_data = EmrStepSensor(
     depends_on_past=True,
 )
 
-# file -> s3 -> EMR -> s3
-# [
-#     movie_review_to_s3_stage,
-#     move_emr_script_to_s3,
-# ] >> add_emr_steps >> clean_movie_review_data
-
-# part 3
-
-# existing config
-get_user_behaviour = "scripts/sql/get_user_behavior_metrics.sql"
-
-# existing imports
-from airflow.hooks.postgres_hook import PostgresHook
-import psycopg2
-
-# existing helper function(s)
-def run_redshift_external_query(qry):
-    rs_hook = PostgresHook(postgres_conn_id="redshift")
-    rs_conn = rs_hook.get_conn()
-    rs_conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-    rs_cursor = rs_conn.cursor()
-    rs_cursor.execute(qry)
-    rs_cursor.close()
-    rs_conn.commit()
-
-
-# existing tasks
 user_purchase_to_rs_stage = PythonOperator(
     dag=dag,
     task_id="user_purchase_to_rs_stage",
@@ -204,9 +186,6 @@ get_user_behaviour = PostgresOperator(
     sql=get_user_behaviour,
     postgres_conn_id="redshift",
 )
-
-# existing task dependency def
-# remove_local_user_purchase_file >> user_purchase_to_rs_stage
 
 
 # Part 1 2 and 3 together finally.
