@@ -123,7 +123,7 @@ text_classifier_script = "scripts/random_text_classification.py"
 
 movie_review_to_s3_stage = PythonOperator(
     dag=dag,
-    task_id="movie_review_to_s3_stage",
+    task_id="user_review_to_s3_stage",
     python_callable=_local_to_s3,
     op_kwargs={"filename": movie_review_local, "key": movie_review_load,},
 )

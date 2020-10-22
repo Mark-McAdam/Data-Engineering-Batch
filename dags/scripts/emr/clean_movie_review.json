@@ -7,7 +7,7 @@
             "Args": [
                 "s3-dist-cp",
                 "--src=s3://{{ params.BUCKET_NAME }}/{{ params.movie_review_load }}",
-                "--dest=/movie"
+                "--dest=hdfs:///movie"
             ]
         }
     },
@@ -23,13 +23,13 @@
         }
     },
     {
-        "Name": "Move raw data from S3 to HDFS",
+        "Name": "Move raw data from Output to S3 2nd part",
         "ActionOnFailure": "CANCEL_AND_WAIT",
         "HadoopJarStep": {
             "Jar": "command-runner.jar",
             "Args": [
                 "s3-dist-cp",
-                "--src=/output",
+                "--src=hdfs:///output",
                 "--dest=s3://{{ params.BUCKET_NAME }}/{{ params.movie_review_stage }}"
             ]
         }
