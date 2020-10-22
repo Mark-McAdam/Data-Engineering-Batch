@@ -1,5 +1,6 @@
 # Data Engineering - Using AWS EMR and RedShift 
 - Batch Processing within an AWS pipeline
+![Apache Airflow DAg](assets/images/airflow_dag_overview.png)
 
 
 
@@ -77,6 +78,3 @@ In you local terminal type within your project base directory
 ```bash
 docker-compose -f docker-compose-LocalExecutor.yml down
 ```
-
-If you are interested in step by step explanation and review, check out the post for this repo at
-[project-for-beginners-batch-edition](https://www.startdataengineering.com/post/data-engineering-project-for-beginners-batch-edition)
