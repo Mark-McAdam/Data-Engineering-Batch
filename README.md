@@ -2,7 +2,7 @@
 - Batch Processing within an AWS pipeline
 ![Apache Airflow DAg](assets/images/airflow_dag_overview.png)
 
-
+Idempotent function that fails gracefully and allows for retries.
 
 ## Prereq
 
