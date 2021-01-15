@@ -1,4 +1,5 @@
-# Data Engineering - Using AWS EMR and RedShift 
+# Data Engineering - AWS EMR and RedShift 
+- Aggregating user review activity with purchase data to provide comprehensive user behavior  
 - Batch Processing within an AWS pipeline
 ![Apache Airflow DAg](assets/images/airflow_dag_overview.png)
 
