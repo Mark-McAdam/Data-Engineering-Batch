@@ -1,9 +1,15 @@
-# Data Engineering - AWS EMR and RedShift 
+# User Feels - Data Engineering 
+- AWS EMR and RedShift 
+
+Takes product reviews and performs natural language processing to provide sentiment analysis. The new insight gets combined with matching product information in the central database to provide a clearer picture of user behavior.
+
 - Aggregating user review activity with purchase data to provide comprehensive user behavior  
 - Batch Processing within an AWS pipeline
 ![Apache Airflow DAg](assets/images/airflow_dag_overview.png)
 
 Idempotent function that fails gracefully and allows for retries.
+
+Data Engineering using a load-stage-clean pattern using Apache Airflow, Amazon Redshift & EMR. Built inside a docker container for reproducibility.
 
 ## Prereq
 
